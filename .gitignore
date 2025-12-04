@@ -7,8 +7,6 @@ vitis/*_app/*
 vitis/*_system
 !vitis/*_app/src/
 
-vitis_vs/
-
 vivado/*cache
 vivado/*runs
 vivado/*sim

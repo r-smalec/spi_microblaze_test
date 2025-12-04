@@ -1,0 +1,6 @@
+create libxil.a
+addlib C:/Users/rsmalec/Downloads/vitis_vs/spi_test_platform/microblaze_0/standalone_microblaze_0/bsp/libsrc/build_configs/gen_bsp/libsrc/uartlite/src/libuartlite.a
+addlib C:/Users/rsmalec/Downloads/vitis_vs/spi_test_platform/microblaze_0/standalone_microblaze_0/bsp/libsrc/build_configs/gen_bsp/libsrc/spi/src/libspi.a
+addlib C:/Users/rsmalec/Downloads/vitis_vs/spi_test_platform/microblaze_0/standalone_microblaze_0/bsp/libsrc/build_configs/gen_bsp/libsrc/intc/src/libintc.a
+save
+end

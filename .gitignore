@@ -1,5 +1,11 @@
-vitis/
-!vitis/spi_test_app/src
+vitis/.metadata
+vitis/*.log
+vitis/.*
+vitis/*_platform
+vitis/RemoteSystemsTempFiles
+vitis/*_app/*
+vitis/*_system
+!vitis/*_app/src/
 
 vivado/*cache
 vivado/*runs

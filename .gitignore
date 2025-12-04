@@ -1,4 +1,5 @@
-
+vitis/
+!vitis/spi_test_app/src
 
 vivado/*cache
 vivado/*runs

@@ -80,6 +80,8 @@ typedef enum {
 int spiInitialize();
 int uartInitialize();
 
+void printHelp();
+
 void resetDataToSend(uint8_t *data, unsigned int len);
 int setDataCmdValue(uint8_t *data, unsigned int len, uint8_t cmd, uint8_t val);
 uint8_t getDataCmdValue(uint8_t *data, unsigned int len, uint8_t cmd);
@@ -101,7 +103,9 @@ int main() {
 	uint8_t cmd, val;
 	uint8_t rampA = 0;
 	uint8_t rampB = 0;
-	xil_printf("Microblaze CLI for SPI, type H for help\n\r");
+	xil_printf("\n\r\n\rMicroblaze CLI for SPI\n\r");
+	printHelp();
+
 	resetDataToSend(data_to_send, DATA_LEN);
 
 	while(1) {
@@ -154,15 +158,7 @@ int main() {
 					transferABrampTestData(rampA, rampB);
 					break;
 				case 'H':
-					xil_printf("Help:\n\r");
-					xil_printf("R: Reset data buff\n\r");
-					xil_printf("T: Transfer data buff\n\r");
-					xil_printf("L: List data buff\n\r");
-					xil_printf("S <cmd> <val>: Set cmd, for example S 2B 04\n\r");
-					xil_printf("A: ramp pattern en for ch A\n\r");
-					xil_printf("a: ramp pattern disable for ch A\n\r");
-					xil_printf("B: ramp pattern en for ch B\n\r");
-					xil_printf("b: ramp pattern diable for ch B\n\r");
+					printHelp();
 					break;
 			}
 		}
@@ -187,8 +183,11 @@ int spiInitialize() {
 		return XST_FAILURE;
 	}
 
-	Status = XSpi_SetOptions(&Spi, XSP_MASTER_OPTION |
-				 XSP_MANUAL_SSELECT_OPTION);
+	Status = XSpi_SetOptions(&Spi,
+					XSP_MASTER_OPTION |
+					XSP_CLK_ACTIVE_LOW_OPTION | // CPOL = 1
+					XSP_MANUAL_SSELECT_OPTION);
+
 	if (Status != XST_SUCCESS) {
 		return XST_FAILURE;
 	}
@@ -206,6 +205,18 @@ int spiInitialize() {
 
 int uartInitialize() {
 	return XUartLite_Initialize(&Uart, UART_DEVICE_ID);
+}
+
+void printHelp() {
+	xil_printf("Help:\n\r");
+	xil_printf("R: Reset data buff\n\r");
+	xil_printf("T: Transfer data buff\n\r");
+	xil_printf("L: List data buff\n\r");
+	xil_printf("S <cmd> <val>: Set cmd, for example S 2B 04\n\r");
+	xil_printf("A: ramp pattern en for ch A\n\r");
+	xil_printf("a: ramp pattern disable for ch A\n\r");
+	xil_printf("B: ramp pattern en for ch B\n\r");
+	xil_printf("b: ramp pattern diable for ch B\n\r");
 }
 
 void resetDataToSend(uint8_t *data, unsigned int len) {

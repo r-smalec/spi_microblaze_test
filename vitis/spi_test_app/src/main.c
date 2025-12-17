@@ -342,23 +342,45 @@ int transferData(uint8_t *data, unsigned int len) {
 }
 
 int cmdEnLvdsSwing(uint8_t *data, unsigned int len, uint8_t en) {
-	return setDataCmdValue(data, len, 0xF1, en ? 0x03 : 0x00);
+	const uint8_t CMD_CODE = 0xF1;
+	uint8_t val;
+	int Status;
+
+	val = en ? 0x03 : 0x00;
+	Status = setDataCmdValue(data, len, CMD_CODE, val);
+
+	uint8_t cmd_val[] = {CMD_CODE, val};
+	if(Status == XST_SUCCESS) {
+		Status = transferData(cmd_val, sizeof(cmd_val));
+	}
+
+	return Status;
 }
 
 int cmdEnDigital(uint8_t *data, unsigned int len, uint8_t en) {
+	const uint8_t CMD_CODE = 0x42;
 	uint8_t val;
-	val = getDataCmdValue(data, len, 0x42);
+	int Status;
+
+	val = getDataCmdValue(data, len, CMD_CODE);
 	if(en) {
 		val |= 0x08;
 	} else {
 		val &= ~(0x08);
 	}
 
-	return setDataCmdValue(data, len, 0x42, val);
+	Status = setDataCmdValue(data, len, CMD_CODE, val);
+	uint8_t cmd_val[] = {CMD_CODE, val};
+
+	if(Status == XST_SUCCESS) {
+		Status = transferData(cmd_val, sizeof(cmd_val));
+	}
+	return Status;
 }
 
 int cmdTestPattern(uint8_t *data, unsigned int len, channel ch, test_pattern tp) {
 	uint8_t cmd, val;
+	int Status;
 
 	if(ch == (channel)A) {
 		cmd = 0x25;
@@ -389,23 +411,33 @@ int cmdTestPattern(uint8_t *data, unsigned int len, channel ch, test_pattern tp)
 				break;
 	}
 
-	return setDataCmdValue(data, len, cmd, val);
+	Status = setDataCmdValue(data, len, cmd, val);
+	uint8_t cmd_val[] = {cmd, val};
+
+	if(Status == XST_SUCCESS) {
+		Status = transferData(cmd_val, sizeof(cmd_val));
+	}
+	return Status;
 }
 
 int transferPatternTestData(uint8_t chA_en, uint8_t chB_en, test_pattern tp) {
+	int Status;
 	resetDataToSend(data_to_send, DATA_LEN);
-	cmdEnLvdsSwing(data_to_send, DATA_LEN, 1);
 	cmdEnDigital(data_to_send, DATA_LEN, 1);
+	usleep(1000);
+	cmdEnLvdsSwing(data_to_send, DATA_LEN, 1);
+	usleep(1000);
+
 	if(chA_en) {
-		cmdTestPattern(data_to_send, DATA_LEN, (channel)A, tp);
+		Status = cmdTestPattern(data_to_send, DATA_LEN, (channel)A, tp);
 	} else {
-		cmdTestPattern(data_to_send, DATA_LEN, (channel)A, (test_pattern)NORMAL);
+		Status = cmdTestPattern(data_to_send, DATA_LEN, (channel)A, (test_pattern)NORMAL);
 	}
 	if(chB_en) {
-		cmdTestPattern(data_to_send, DATA_LEN, (channel)B, tp);
+		Status = cmdTestPattern(data_to_send, DATA_LEN, (channel)B, tp);
 	} else {
-		cmdTestPattern(data_to_send, DATA_LEN, (channel)B, (test_pattern)NORMAL);
+		Status = cmdTestPattern(data_to_send, DATA_LEN, (channel)B, (test_pattern)NORMAL);
 	}
 
-	return transferData(data_to_send, DATA_LEN);
+	return Status;
 }

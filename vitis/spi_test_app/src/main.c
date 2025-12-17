@@ -92,7 +92,7 @@ int cmdEnLvdsSwing(uint8_t *data, unsigned int len, uint8_t en);
 int cmdEnDigital(uint8_t *data, unsigned int len, uint8_t en);
 int cmdTestPattern(uint8_t *data, unsigned int len, channel ch, test_pattern tp);
 
-int transferABrampTestData(uint8_t chA_en, uint8_t chB_en);
+int transferPatternTestData(uint8_t chA_en, uint8_t chB_en, test_pattern tp);
 
 int main() {
 	spiInitialize();
@@ -103,6 +103,10 @@ int main() {
 	uint8_t cmd, val;
 	uint8_t rampA = 0;
 	uint8_t rampB = 0;
+	uint8_t all1A = 0;
+	uint8_t all1B = 0;
+	uint8_t all0A = 0;
+	uint8_t all0B = 0;
 	xil_printf("\n\r\n\rMicroblaze CLI for SPI\n\r");
 	printHelp();
 
@@ -118,14 +122,17 @@ int main() {
 					xil_printf("Reset cmd\n\r");
 					resetDataToSend(data_to_send, DATA_LEN);
 					break;
+
 				case 'T':
 					xil_printf("Transfer cmd\n\r");
 					transferData(data_to_send, DATA_LEN);
 					break;
+
 				case 'L':
 					xil_printf("List cmd\n\r");
 					listData(data_to_send, DATA_LEN);
 					break;
+
 				case 'S':
 					xil_printf("Set cmd\n\r");
 					bytesNo = XUartLite_Recv(&Uart, (u8*)buff, CMD_LEN);
@@ -137,26 +144,79 @@ int main() {
 					val = strtoul(val_buff, NULL, 16);
 					setDataCmdValue(data_to_send, DATA_LEN, cmd, val);
 					break;
+
 				case 'A':
 					xil_printf("Ramp for ch A en\n\r");
 					rampA = 1;
-					transferABrampTestData(rampA, rampB);
+					transferPatternTestData(rampA, rampB, (test_pattern)RAMP);
 					break;
+
 				case 'a':
 					xil_printf("Ramp for ch A disable\n\r");
 					rampA = 0;
-					transferABrampTestData(rampA, rampB);
+					transferPatternTestData(rampA, rampB, (test_pattern)RAMP);
 					break;
+
 				case 'B':
 					xil_printf("Ramp for ch B en\n\r");
 					rampB = 1;
-					transferABrampTestData(rampA, rampB);
+					transferPatternTestData(rampA, rampB, (test_pattern)RAMP);
 					break;
+
 				case 'b':
 					xil_printf("Ramp for ch B disable\n\r");
 					rampB = 0;
-					transferABrampTestData(rampA, rampB);
+					transferPatternTestData(rampA, rampB, (test_pattern)RAMP);
 					break;
+
+				case 'I':
+				    xil_printf("ALL1s for ch A en\n\r");
+				    all1A = 1;
+				    transferPatternTestData(all1A, all1B, (test_pattern)ALL1s);
+				    break;
+
+				case 'i':
+				    xil_printf("ALL1s for ch A disable\n\r");
+				    all1A = 0;
+				    transferPatternTestData(all1A, all1B, (test_pattern)ALL1s);
+				    break;
+
+				case 'J':
+				    xil_printf("ALL1s for ch B en\n\r");
+				    all1B = 1;
+				    transferPatternTestData(all1A, all1B, (test_pattern)ALL1s);
+				    break;
+
+				case 'j':
+				    xil_printf("ALL1s for ch B disable\n\r");
+				    all1B = 0;
+				    transferPatternTestData(all1A, all1B, (test_pattern)ALL1s);
+				    break;
+
+				case 'O':
+				    xil_printf("ALL0s for ch A en\n\r");
+				    all0A = 1;
+				    transferPatternTestData(all0A, all0B, (test_pattern)ALL0s);
+				    break;
+
+				case 'o':
+				    xil_printf("ALL0s for ch A disable\n\r");
+				    all0A = 0;
+				    transferPatternTestData(all0A, all0B, (test_pattern)ALL0s);
+				    break;
+
+				case 'P':
+				    xil_printf("ALL0s for ch B en\n\r");
+				    all0B = 1;
+				    transferPatternTestData(all0A, all0B, (test_pattern)ALL0s);
+				    break;
+
+				case 'p':
+				    xil_printf("ALL0s for ch B disable\n\r");
+				    all0B = 0;
+				    transferPatternTestData(all0A, all0B, (test_pattern)ALL0s);
+				    break;
+
 				case 'H':
 					printHelp();
 					break;
@@ -209,14 +269,28 @@ int uartInitialize() {
 
 void printHelp() {
 	xil_printf("Help:\n\r");
+
 	xil_printf("R: Reset data buff\n\r");
 	xil_printf("T: Transfer data buff\n\r");
 	xil_printf("L: List data buff\n\r");
 	xil_printf("S <cmd> <val>: Set cmd, for example S 2B 04\n\r");
-	xil_printf("A: ramp pattern en for ch A\n\r");
-	xil_printf("a: ramp pattern disable for ch A\n\r");
-	xil_printf("B: ramp pattern en for ch B\n\r");
-	xil_printf("b: ramp pattern diable for ch B\n\r");
+
+    xil_printf("\n\rTest patterns:\n\r");
+
+    xil_printf("A: Ramp pattern enable for ch A\n\r");
+    xil_printf("a: Ramp pattern disable for ch A\n\r");
+    xil_printf("B: Ramp pattern enable for ch B\n\r");
+    xil_printf("b: Ramp pattern disable for ch B\n\r");
+
+    xil_printf("I: ALL1s pattern enable for ch A\n\r");
+    xil_printf("i: ALL1s pattern disable for ch A\n\r");
+    xil_printf("J: ALL1s pattern enable for ch B\n\r");
+    xil_printf("j: ALL1s pattern disable for ch B\n\r");
+
+    xil_printf("O: ALL0s pattern enable for ch A\n\r");
+    xil_printf("o: ALL0s pattern disable for ch A\n\r");
+    xil_printf("P: ALL0s pattern enable for ch B\n\r");
+    xil_printf("p: ALL0s pattern disable for ch B\n\r");
 }
 
 void resetDataToSend(uint8_t *data, unsigned int len) {
@@ -262,7 +336,7 @@ int transferData(uint8_t *data, unsigned int len) {
 		xil_printf("SPI transfer failed\n\r");
 		return XST_FAILURE;
 	} else {
-		listData(data, len);
+//		listData(data, len);
 		return XST_SUCCESS;
 	}
 }
@@ -318,17 +392,17 @@ int cmdTestPattern(uint8_t *data, unsigned int len, channel ch, test_pattern tp)
 	return setDataCmdValue(data, len, cmd, val);
 }
 
-int transferABrampTestData(uint8_t chA_en, uint8_t chB_en) {
+int transferPatternTestData(uint8_t chA_en, uint8_t chB_en, test_pattern tp) {
 	resetDataToSend(data_to_send, DATA_LEN);
 	cmdEnLvdsSwing(data_to_send, DATA_LEN, 1);
 	cmdEnDigital(data_to_send, DATA_LEN, 1);
 	if(chA_en) {
-		cmdTestPattern(data_to_send, DATA_LEN, (channel)A, (test_pattern)RAMP);
+		cmdTestPattern(data_to_send, DATA_LEN, (channel)A, tp);
 	} else {
 		cmdTestPattern(data_to_send, DATA_LEN, (channel)A, (test_pattern)NORMAL);
 	}
 	if(chB_en) {
-		cmdTestPattern(data_to_send, DATA_LEN, (channel)B, (test_pattern)RAMP);
+		cmdTestPattern(data_to_send, DATA_LEN, (channel)B, tp);
 	} else {
 		cmdTestPattern(data_to_send, DATA_LEN, (channel)B, (test_pattern)NORMAL);
 	}
